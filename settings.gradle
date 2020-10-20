@@ -1,0 +1,5 @@
+include ':apputil-file-rx'
+include ':appcompat'
+include ':apputil'
+include ':app'
+rootProject.name = "AppUtil"
