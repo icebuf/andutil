@@ -72,7 +72,7 @@ public class ReflectUtil {
     }
 
 
-    private static boolean set(@NonNull Object object,
+    public static boolean set(@NonNull Object object,
                                Field field, @Nullable Object value) {
         if(field == null) {
             return false;
@@ -87,20 +87,38 @@ public class ReflectUtil {
         return false;
     }
 
-    private static <T> T get(T t, Field field) {
+    public static <T> T get(Object object, String fieldName) {
+        try {
+            return get(object, object.getClass().getDeclaredField(fieldName));
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static <T> T get(Object object, Field field) {
         if(field == null) {
             return null;
         }
         accessible(field);
         try {
-            return cast(field.get(t));
+            return cast(field.get(object));
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    private static boolean getBoolean(Object object, Field field) {
+    public static boolean getBoolean(Object object, String fieldName) {
+        try {
+            return getBoolean(object, object.getClass().getDeclaredField(fieldName));
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean getBoolean(Object object, Field field) {
         accessible(field);
         try {
             return field.getBoolean(object);
@@ -241,7 +259,7 @@ public class ReflectUtil {
      * @param name   the name
      * @param params the params
      */
-    public static void invoke(Object object, String name, Object... params) {
+    public static <T> T invoke(Object object, String name, Object... params) {
         Class<?> clazz = object.getClass();
         Class<?>[] paramsClazz = null;
         if(params != null) {
@@ -252,11 +270,22 @@ public class ReflectUtil {
         }
         try {
             Method method = clazz.getDeclaredMethod(name, paramsClazz);
-            method.invoke(object, params);
+            accessible(method);
+            return cast(method.invoke(object, params));
         } catch (NoSuchMethodException
                 | IllegalAccessException
                 | InvocationTargetException e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    public static Field getDeclaredField(Class<?> clazz, String name) {
+        try {
+            return clazz.getDeclaredField(name);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
